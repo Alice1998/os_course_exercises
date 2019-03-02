@@ -18,13 +18,59 @@
 
 - 你理解的对于类似ucore这样需要进程/虚存/文件系统的操作系统，在硬件设计上至少需要有哪些直接的支持？至少应该提供哪些功能的特权指令？
 
+  - 进程的切换需要硬件支持适中的中断
+
+  - 虚存管理需要地址映射机制，因而需要MMU等硬件
+
+  - 对于文件系统，需要硬件有稳定的存储介质来保证操作系统的持久性
+
+    相应的，应该提供中断是能，触发软中断等中断相关的，设置内存寻址模式，设置页表等内存管理相关的，执行IO操作等文件系统相关的特权指令。
+
 - 你理解的x86的实模式和保护模式有什么区别？物理地址、线性地址、逻辑地址的含义分别是什么？
 
+  两者的区别在于进程内存是否得到保护：
+
+  - 实模式是将整个物理内存作为分段的区域，程序代码和数据位于不同的区域，系统程序和用户程序没有区别对待。每一个指针都指向实际的地址。
+    - 故用户程序的一个指针如果指向了系统程序区或者其他用户程序区，并且改变了值，那个这个被修改的系统程序或者用户程序，很有可能会产生灾难性的影响。
+  - 在保护模式中，物理内存地址不能直接被程序访问，程序内部的地址（虚拟地址）要有操作系统转化为物理地址去访问，程序对此一无所知。
+
+  物理地址，线性地址，逻辑地址：
+
+  - 物理地址
+    - 处理器提交在总线上，用于访问计算机系统中的内存和外设的最终地址
+
+
+
+  - 线性地址
+
+    - 逻辑地址到物理地址变换的中间层，是处理器通过段机制控制下形成的地址空间
+
+  - 逻辑地址
+
+    - 在有地址变换功能的计算机中，访问指令给出的地址
+
 - 你理解的RV的特权模式有什么区别？不同 模式在地址访问方面有何特征？
+
+  - 
 
 - 理解list_entry双向链表数据结构及其4个基本操作函数和ucore中一些基于它的代码实现（此题不用填写内容）
 
 - 对于如下的代码段，请说明":"后面的数字是什么含义
+
+  ```
+   /* Gate descriptors for interrupts and traps */
+   struct gatedesc {
+      unsigned gd_off_15_0 : 16;        // low 16 bits of offset in segment
+      unsigned gd_ss : 16;            // segment selector
+      unsigned gd_args : 5;            // # args, 0 for interrupt/trap gates
+      unsigned gd_rsv1 : 3;            // reserved(should be zero I guess)
+      unsigned gd_type : 4;            // type(STS_{TG,IG32,TG32})
+      unsigned gd_s : 1;                // must be 0 (system)
+      unsigned gd_dpl : 2;            // descriptor(meaning new) privilege level
+      unsigned gd_p : 1;                // Present
+      unsigned gd_off_31_16 : 16;        // high bits of offset in segment
+   };
+  ```
 ```
  /* Gate descriptors for interrupts and traps */
  struct gatedesc {
@@ -39,6 +85,10 @@
     unsigned gd_off_31_16 : 16;        // high bits of offset in segment
  };
 ```
+
+表示每一个域在结构体中所占的位数
+
+
 
 - 对于如下的代码段，
 
@@ -62,6 +112,10 @@ intr=8;
 SETGATE(intr, 1,2,3,0);
 ```
 请问执行上述指令后， intr的值是多少？
+
+`intr=0x20003`
+
+off=3, sel=2
 
 ### 课堂实践练习
 
